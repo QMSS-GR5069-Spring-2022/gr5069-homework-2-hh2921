@@ -1,0 +1,277 @@
+---
+title: "HW3"
+output: html_document
+---
+```{r load-packages, include=FALSE}
+library(dplyr)
+library(magrittr)
+library(knitr)
+library(tidymodels)
+tidymodels_prefer()
+library(pdftools)
+library(stringr)
+library(tidytext)
+library(ggplot2)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+```
+
+1 Text Analysis
+```{r}
+Turley <- pdftools::pdf_data("https://tinyurl.com/4Turley", font_info = TRUE)
+```
+
+1.1 Footnotes
+These consecutive integers have a smaller font size that the main text and the rest of the footnote. Drop all the footnotes from each page.
+```{r}
+for (i in 1:length(Turley)) {
+    if (length(which(Turley[[i]]$font_size == "7.92")) > 0) {
+      Turley[[i]] <- Turley[[i]][-c(which(Turley[[i]]$font_size == "7.92")[(length(which(Turley[[i]]$font_size == "7.92"))/2) + 1]: dim(Turley[[i]])[1]), ]
+    } else{
+      Turley[[i]] <- Turley[[i]]
+    }
+}
+```
+
+```{r}
+Turley <- bind_rows(Turley)
+```
+
+1.2 Encoding
+The pdftools::pdf_data function will use UTF-8 encoding for any special characters in the text column.
+Convert the text to ASCII using transliteration, which is very similar to how we handed emojis in tweets last week.
+```{r}
+Turley <- mutate(Turley, text = iconv(text, from = "UTF-8", to = "ASCII", sub = "byte"))
+```
+
+1.3 Punctuation
+Remove all punction from text.
+```{r}
+tidy_Turley <- Turley %>%
+  unnest_tokens(output = word, input = text)
+```
+
+1.4 Sentiment
+```{r}
+sentiment <- get_sentiments("afinn")
+```
+
+```{r}
+turley_senti <- tidy_Turley %>% 
+  inner_join(sentiment,by="word") %>% 
+  group_by(value) %>%
+  count()
+turley_senti
+```
+
+1.5 Other Witness
+Repeat all the above steps as necessary for the testimony of Professor Feldman. Use functions in the ggplot2 package to visually compare the distribution of sentiment of Turley’s words to those of Feldman. Based on your analysis, which witness do you think was called by the Democrats and which was called by the Republicans?
+```{r}
+Feldman <- pdftools::pdf_data("https://tinyurl.com/1Feldman", font_info = TRUE)
+Feldman <- bind_rows(Feldman)
+Feldman <- Feldman[!Feldman$font_size < 11.04, ]
+```
+
+```{r}
+Feldman <- mutate(Feldman, text = iconv(text, from = "UTF-8", to = "ASCII", sub = "byte"))
+```
+
+```{r}
+tidy_Feldman <- Feldman %>%
+  unnest_tokens(output = word, input = text)
+```
+
+```{r}
+feldman_senti <- tidy_Feldman %>% 
+  inner_join(sentiment,by="word") %>% 
+  group_by(value) %>%
+  count()
+feldman_senti
+```
+
+```{r}
+ggplot(data=turley_senti, aes(x=value, y=n)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Sentiment Analysis for Turley")
+```
+```{r}
+ggplot(data=feldman_senti, aes(x=value, y=n)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Sentiment Analysis for Feldman")
+```
+
+Based on the text analysis and the plots, I think Turley is called by Republican because his overall sentiment is on a positive side, and Feldman is called by Democrats because his overall sentiment is on a negative side.
+
+1.6 Assessment
+Explain why sentiment analysis is or is not fruitful in this particular context of expert testimony before the
+Judiciary Committee of the U.S. House of Representatives.
+
+I do think sentiment analysis is fruitful in this particular context, because it could eaily to find out their stand point and their main thoughts about this impeachment.
+
+1.7 Unsupervised vs. Supervised Learning
+Is the analysis in this problem primarily unsupervised learning or supervised learning. Why?
+
+I think this is an unsupervised learning, because we don't have a pre-labeled dataset, and we also do not have a training process for this analysis.
+
+2 Linear Models
+```{r}
+ROOT <- "https://archive.ics.uci.edu/ml/machine-learning-databases/"
+crime <- read.csv(paste0(ROOT, "communities/communities.data"),
+
+header = FALSE, na.strings = "?")
+
+colnames(crime) <- read.table(paste0(ROOT, "communities/communities.names"),
+
+skip = 75, nrows = ncol(crime))[, 2]
+rownames(crime) <- paste(crime$state, crime$communityname, sep = "_")
+
+View(crime)
+```
+
+
+2.1 Training and Testing
+Use the initial_split function in the rsample package to split crime into a training dataset (with about
+80% of the observations) and a testing dataset (with the remaining 20% or so of observations). You may
+want to utilize its strata argument, which by default is NULL.
+```{r}
+set.seed(12345) # makes the rest deterministic
+```
+
+```{r}
+#crime_new <- crime[, !communityname]
+crime$communityname <- NULL
+View(crime)
+```
+
+```{r}
+sapply(crime,function(x)all(any(is.na(x))))
+sapply(crime, function(x)sum(is.na(x)))
+```
+
+```{r}
+# fill the NA values with column means
+crime_new = crime %>% mutate_if(is.numeric, function(crime) replace(crime, is.na(crime), mean(crime, na.rm = TRUE)))
+
+View(crime_new)
+```
+
+```{r}
+sapply(crime_new, function(x)sum(is.na(x)))
+```
+
+
+```{r}
+crime_split <- initial_split(crime, strata = NULL, prob = 0.80)
+crime_train <- training(crime_split)
+crime_test  <- testing(crime_split)
+```
+
+```{r}
+crime_new_split <- initial_split(crime_new, strata = NULL, prob = 0.80)
+crime_new_train <- training(crime_new_split)
+crime_new_test  <- testing(crime_new_split)
+```
+
+2.2 Ordinary Least Squares
+Use the functions in (or called by) the tidymodels package to ultimately predict ViolentCrimesPerPop in
+the testing data. When modeling ViolentCrimesPerPop in the training data, you should use ordinary least
+squares but can include any substeps in the recipe that you deem necessary. What is the Root Mean
+Squared Error (RMSE) in the testing data?
+
+```{r}
+lm_model <- 
+  linear_reg() %>% # there are many other models that we will touch on in future weeks
+  set_engine("lm") # there are many ways to estimate a linear model besides just OLS
+
+lm_workflow <-
+  workflow() %>%
+  add_model(lm_model) %>%
+  add_formula(ViolentCrimesPerPop ~ .) # . means "everything not otherwise mentioned"
+
+lm_fit <- fit(lm_workflow, data = crime_train) # solves optimization problem
+```
+
+```{r}
+y_hat <- predict(lm_fit, new_data = crime_test) # a tbl with one column called .pred
+```
+
+```{r}
+rmse(y_hat, truth = crime_test$ViolentCrimesPerPop, estimate = .pred)
+```
+
+```{r}
+lm_model <- 
+  linear_reg() %>% # there are many other models that we will touch on in future weeks
+  set_engine("lm") # there are many ways to estimate a linear model besides just OLS
+
+lm_workflow <-
+  workflow() %>%
+  add_model(lm_model) %>%
+  add_formula(ViolentCrimesPerPop ~ .) # . means "everything not otherwise mentioned"
+
+lm_fit <- fit(lm_workflow, data = crime_new_train) # solves optimization problem
+```
+
+```{r}
+y_hat <- predict(lm_fit, new_data = crime_new_test) # a tbl with one column called .pred
+```
+
+```{r}
+rmse(y_hat, truth = crime_new_test$ViolentCrimesPerPop, estimate = .pred)
+```
+The root mean is around 0.133.
+
+
+#2.3 Elastic Net
+
+Now model ViolentCrimesPerPop in the training data using the same predictors as in the previous sub-
+problem but use the glmnet estimator with grid search to find the best values of its two tuning parameters.
+
+How does its RMSE in the testing data compare to that in the previous subproblem?
+
+```{r}
+crime_recipe <- 
+  recipe(ViolentCrimesPerPop ~ ., data = crime_new_train) %>%
+  prep(training = crime_new_train)
+```
+
+```{r}
+crime_rs <- bootstraps(crime_new_train, times = 50)
+crime_rs
+
+glmnet_model <- 
+  linear_reg(penalty = tune(), mixture = tune()) %>% # tune() means to tune that parameter
+  set_engine("glmnet")                               # not OLS
+
+glmnet_workflow <-
+  workflow() %>%
+  add_model(glmnet_model) %>%
+  add_recipe(crime_recipe)
+
+glmnet_grid <- grid_regular(parameters(glmnet_model), levels = 10)
+
+results <- tune_grid(glmnet_workflow, resamples = crime_rs, grid = glmnet_grid)
+
+lowest_rmse <- 
+  results %>% 
+  select_best("rmse")
+
+final_wf <- finalize_workflow(glmnet_workflow, lowest_rmse) # with chosen tuning parameters
+
+tuned_fit <- fit(final_wf, data = crime_new_train)                 # finish step 2
+y_hat <- predict(tuned_fit, new_data = crime_new_test)
+rmse(y_hat, truth = crime_new_test$PolicBudgPerPop, estimate = .pred)
+```
+
+```{r}
+lowest_rmse
+```
+The root mean after tuning method is around 0.192, which is a little bit larger than the previous one. The best tuning parameter is 0.006 for the penalty and 0.683 for the mixture.
+
+
+
+
