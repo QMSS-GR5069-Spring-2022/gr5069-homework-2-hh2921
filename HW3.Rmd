@@ -162,7 +162,11 @@ sapply(crime, function(x)sum(is.na(x)))
 
 ```{r}
 # fill the NA values with column means
-crime_new = crime %>% mutate_if(is.numeric, function(crime) replace(crime, is.na(crime), mean(crime, na.rm = TRUE)))
+crime_new = crime %>% mutate_if(
+  is.numeric, function(crime) replace(
+    crime, is.na(crime), mean(crime, na.rm = TRUE)
+    )
+  )
 
 View(crime_new)
 ```
