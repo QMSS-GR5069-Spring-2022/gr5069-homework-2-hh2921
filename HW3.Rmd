@@ -75,6 +75,9 @@ turley_senti
 
 1.5 Other Witness
 Repeat all the above steps as necessary for the testimony of Professor Feldman. Use functions in the ggplot2 package to visually compare the distribution of sentiment of Turley’s words to those of Feldman. Based on your analysis, which witness do you think was called by the Democrats and which was called by the Republicans?
+
+# Suggestion: give the descrip of the new data
+
 ```{r}
 Feldman <- pdftools::pdf_data("https://tinyurl.com/1Feldman", font_info = TRUE)
 Feldman <- bind_rows(Feldman)
