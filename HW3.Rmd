@@ -6,6 +6,7 @@ output: html_document
 1. Add a readme file to give more details about the project
 2. Include the outsider link of the data can be helpful
 3. Include the schema of the data is necessary to help to understand the logic of the code
+4. Make a meaningful title and author details
 ```{r load-packages, include=FALSE}
 library(dplyr)
 library(magrittr)
