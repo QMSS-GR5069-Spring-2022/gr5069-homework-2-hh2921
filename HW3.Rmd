@@ -25,7 +25,8 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 ```
 
 ## 1 Text Analysis
-```{r}
+```{r text analysis}
+# Attach meaningful chunk name to imrpove the readbility like this
 Turley <- pdftools::pdf_data("https://tinyurl.com/4Turley", font_info = TRUE)
 ```
 
