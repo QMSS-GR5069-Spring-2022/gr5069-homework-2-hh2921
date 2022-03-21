@@ -113,7 +113,7 @@ ggplot(data=feldman_senti, aes(x=value, y=n)) +
 
 Based on the text analysis and the plots, I think Turley is called by Republican because his overall sentiment is on a positive side, and Feldman is called by Democrats because his overall sentiment is on a negative side.
 
-1.6 Assessment
+#1.6 Assessment
 Explain why sentiment analysis is or is not fruitful in this particular context of expert testimony before the
 Judiciary Committee of the U.S. House of Representatives.
 
@@ -140,7 +140,7 @@ View(crime)
 ```
 
 
-2.1 Training and Testing
+#2.1 Training and Testing
 Use the initial_split function in the rsample package to split crime into a training dataset (with about
 80% of the observations) and a testing dataset (with the remaining 20% or so of observations). You may
 want to utilize its strata argument, which by default is NULL.
@@ -188,7 +188,7 @@ crime_new_train <- training(crime_new_split)
 crime_new_test  <- testing(crime_new_split)
 ```
 
-2.2 Ordinary Least Squares
+#2.2 Ordinary Least Squares
 Use the functions in (or called by) the tidymodels package to ultimately predict ViolentCrimesPerPop in
 the testing data. When modeling ViolentCrimesPerPop in the training data, you should use ordinary least
 squares but can include any substeps in the recipe that you deem necessary. What is the Root Mean
