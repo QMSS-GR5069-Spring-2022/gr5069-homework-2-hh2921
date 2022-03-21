@@ -2,6 +2,8 @@
 title: "HW3"
 output: html_document
 ---
+## Suggestions:
+1. Add a readme file to give more details about the project
 ```{r load-packages, include=FALSE}
 library(dplyr)
 library(magrittr)
