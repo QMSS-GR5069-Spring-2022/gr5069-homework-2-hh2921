@@ -18,7 +18,7 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 ```
 
-1 Text Analysis
+## 1 Text Analysis
 ```{r}
 Turley <- pdftools::pdf_data("https://tinyurl.com/4Turley", font_info = TRUE)
 ```
