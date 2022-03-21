@@ -155,6 +155,7 @@ View(crime)
 ```
 
 ```{r}
+# Add more comments on the section, like check the missing values
 sapply(crime,function(x)all(any(is.na(x))))
 sapply(crime, function(x)sum(is.na(x)))
 ```
