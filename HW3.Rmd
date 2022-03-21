@@ -211,6 +211,7 @@ lm_fit <- fit(lm_workflow, data = crime_train) # solves optimization problem
 y_hat <- predict(lm_fit, new_data = crime_test) # a tbl with one column called .pred
 ```
 
+# Explain more about the assessment choice, why rmse
 ```{r}
 rmse(y_hat, truth = crime_test$ViolentCrimesPerPop, estimate = .pred)
 ```
