@@ -2,6 +2,12 @@
 title: "HW3"
 output: html_document
 ---
+## Suggestions:
+1. Add a readme file to give more details about the project
+2. Include the outsider link of the data can be helpful
+3. Include the schema of the data is necessary to help to understand the logic of the code
+4. Make a meaningful title and author details
+5. Knit a html document to show the results of the project more directly
 ```{r load-packages, include=FALSE}
 library(dplyr)
 library(magrittr)
@@ -18,8 +24,9 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 ```
 
-1 Text Analysis
-```{r}
+## 1 Text Analysis
+```{r text analysis}
+# Attach meaningful chunk name to imrpove the readbility like this
 Turley <- pdftools::pdf_data("https://tinyurl.com/4Turley", font_info = TRUE)
 ```
 
@@ -68,6 +75,9 @@ turley_senti
 
 1.5 Other Witness
 Repeat all the above steps as necessary for the testimony of Professor Feldman. Use functions in the ggplot2 package to visually compare the distribution of sentiment of Turley’s words to those of Feldman. Based on your analysis, which witness do you think was called by the Democrats and which was called by the Republicans?
+
+# Suggestion: give the descrip of the new data
+
 ```{r}
 Feldman <- pdftools::pdf_data("https://tinyurl.com/1Feldman", font_info = TRUE)
 Feldman <- bind_rows(Feldman)
@@ -106,7 +116,7 @@ ggplot(data=feldman_senti, aes(x=value, y=n)) +
 
 Based on the text analysis and the plots, I think Turley is called by Republican because his overall sentiment is on a positive side, and Feldman is called by Democrats because his overall sentiment is on a negative side.
 
-1.6 Assessment
+#1.6 Assessment
 Explain why sentiment analysis is or is not fruitful in this particular context of expert testimony before the
 Judiciary Committee of the U.S. House of Representatives.
 
@@ -133,7 +143,7 @@ View(crime)
 ```
 
 
-2.1 Training and Testing
+#2.1 Training and Testing
 Use the initial_split function in the rsample package to split crime into a training dataset (with about
 80% of the observations) and a testing dataset (with the remaining 20% or so of observations). You may
 want to utilize its strata argument, which by default is NULL.
@@ -148,13 +158,18 @@ View(crime)
 ```
 
 ```{r}
+# Add more comments on the section, like check the missing values
 sapply(crime,function(x)all(any(is.na(x))))
 sapply(crime, function(x)sum(is.na(x)))
 ```
 
 ```{r}
 # fill the NA values with column means
-crime_new = crime %>% mutate_if(is.numeric, function(crime) replace(crime, is.na(crime), mean(crime, na.rm = TRUE)))
+crime_new = crime %>% mutate_if(
+  is.numeric, function(crime) replace(
+    crime, is.na(crime), mean(crime, na.rm = TRUE)
+    )
+  )
 
 View(crime_new)
 ```
@@ -176,7 +191,7 @@ crime_new_train <- training(crime_new_split)
 crime_new_test  <- testing(crime_new_split)
 ```
 
-2.2 Ordinary Least Squares
+#2.2 Ordinary Least Squares
 Use the functions in (or called by) the tidymodels package to ultimately predict ViolentCrimesPerPop in
 the testing data. When modeling ViolentCrimesPerPop in the training data, you should use ordinary least
 squares but can include any substeps in the recipe that you deem necessary. What is the Root Mean
@@ -199,6 +214,7 @@ lm_fit <- fit(lm_workflow, data = crime_train) # solves optimization problem
 y_hat <- predict(lm_fit, new_data = crime_test) # a tbl with one column called .pred
 ```
 
+# Explain more about the assessment choice, why rmse
 ```{r}
 rmse(y_hat, truth = crime_test$ViolentCrimesPerPop, estimate = .pred)
 ```
